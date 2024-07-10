@@ -1,0 +1,28 @@
+services:
+# TODO: Add Dockerfile for the application
+#  back:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    networks:
+#      - reverse-proxy
+#    restart: unless-stopped
+#    ports:
+#      - 3000:3000
+#    environment:
+#      DATABASE_URL: postgres://root:root@database:5432/back
+
+  database:
+    image: postgres:16.3
+    networks:
+      - reverse-proxy
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: back
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+
+networks:
+  reverse-proxy:
