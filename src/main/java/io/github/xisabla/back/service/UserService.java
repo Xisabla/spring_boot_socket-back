@@ -2,9 +2,14 @@ package io.github.xisabla.back.service;
 
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import io.github.xisabla.back.dto.LoginUserDto;
+import io.github.xisabla.back.dto.RegisterUserDto;
 import io.github.xisabla.back.enums.Role;
+import io.github.xisabla.back.exception.APIException;
 import io.github.xisabla.back.exception.UserNotFoundException;
 import io.github.xisabla.back.model.User;
 import io.github.xisabla.back.repository.UserRepositoryInterface;
@@ -15,26 +20,33 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
     private final UserRepositoryInterface userRepository;
 
+    private final Argon2PasswordEncoder passwordEncoder;
+
     //
     // CREATE
     //
 
-    public User createUser(User user) {
+    public User createUser(User user) throws APIException {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new APIException(HttpStatus.CONFLICT, "User already exists");
+        }
+
         return userRepository.save(user);
     }
 
-    public User createUser(String username, String password, Role role) {
+    public User createUser(String username, String password, Role role, boolean enabled) {
         User user = User.builder()
                 .username(username)
-                .password(password)
+                .password(encodePassword(password))
                 .role(role)
+                .enabled(enabled)
                 .build();
 
         return createUser(user);
     }
 
     public User createUser(String username, String password) {
-        return createUser(username, password, Role.USER);
+        return createUser(username, password, Role.USER, true);
     }
 
     //
@@ -47,5 +59,40 @@ public class UserService {
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+    }
+
+    //
+    // AUTH
+    //
+
+    public User registerUser(RegisterUserDto registerUser) {
+        return createUser(registerUser.getUsername(), registerUser.getPassword());
+    }
+
+    public User loginUser(LoginUserDto loginUser) {
+        User user = getUserByUsername(loginUser.getUsername());
+
+        if (!checkPassword(loginUser.getPassword(), user.getPassword())) {
+            throw new APIException(HttpStatus.UNAUTHORIZED, "Invalid password");
+        }
+
+        return user;
+    }
+
+    public String createToken(User user) {
+        // TODO: Implement JWT
+        return user.getId().toString();
+    }
+
+    //
+    // OTHERS
+    //
+
+    public String encodePassword(String password) {
+        return passwordEncoder.encode(password);
+    }
+
+    public boolean checkPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 }
