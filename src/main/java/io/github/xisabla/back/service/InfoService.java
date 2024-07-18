@@ -16,7 +16,7 @@ public class InfoService {
     public class Version {
         private String version;
         private String build;
-        private String time;
+        private String timestamp;
     }
 
     @Value("${git.build.version}")
