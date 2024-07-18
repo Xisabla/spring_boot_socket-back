@@ -1,10 +1,15 @@
 package io.github.xisabla.back.model;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.github.xisabla.back.enums.Role;
 import jakarta.persistence.Column;
@@ -31,7 +36,7 @@ import lombok.Builder.Default;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -41,11 +46,15 @@ public class User {
     private String username;
 
     @Size(min = 32, max = 128)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Default
     private Role role = Role.USER;
+
+    @Default
+    private boolean locked = false;
 
     @Default
     private boolean enabled = true;
@@ -55,4 +64,14 @@ public class User {
 
     @UpdateTimestamp
     private Date updatedAt;
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return !locked;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return role.getAuthorities();
+    }
 }

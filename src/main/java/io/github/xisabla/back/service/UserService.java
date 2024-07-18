@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import io.github.xisabla.back.dto.LoginUserDto;
 import io.github.xisabla.back.dto.RegisterUserDto;
+import io.github.xisabla.back.dto.TokenizedUserDto;
 import io.github.xisabla.back.enums.Role;
 import io.github.xisabla.back.exception.APIException;
 import io.github.xisabla.back.exception.UserNotFoundException;
@@ -19,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepositoryInterface userRepository;
+
+    private final JwtService jwtService;
 
     private final Argon2PasswordEncoder passwordEncoder;
 
@@ -65,23 +68,27 @@ public class UserService {
     // AUTH
     //
 
-    public User registerUser(RegisterUserDto registerUser) {
-        return createUser(registerUser.getUsername(), registerUser.getPassword());
+    public TokenizedUserDto registerUser(RegisterUserDto registerUser) {
+        User user = createUser(registerUser.getUsername(), registerUser.getPassword());
+        String token = createToken(user);
+
+        return TokenizedUserDto.fromUser(user, token);
     }
 
-    public User loginUser(LoginUserDto loginUser) {
+    public TokenizedUserDto loginUser(LoginUserDto loginUser) {
         User user = getUserByUsername(loginUser.getUsername());
 
         if (!checkPassword(loginUser.getPassword(), user.getPassword())) {
             throw new APIException(HttpStatus.UNAUTHORIZED, "Invalid password");
         }
 
-        return user;
+        String token = createToken(user);
+
+        return TokenizedUserDto.fromUser(user, token);
     }
 
     public String createToken(User user) {
-        // TODO: Implement JWT
-        return user.getId().toString();
+        return jwtService.generateToken(user);
     }
 
     //

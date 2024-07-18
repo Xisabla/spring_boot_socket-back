@@ -1,6 +1,9 @@
 package io.github.xisabla.back.enums;
 
+import java.util.Collection;
 import java.util.Set;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,7 +17,14 @@ public enum Role {
 
     private final Set<Permission> permissions;
 
-    public Set<Permission> getPermissions() {
+    public Collection<Permission> getPermissions() {
         return permissions;
+    }
+
+    public Collection<SimpleGrantedAuthority> getAuthorities() {
+        return permissions
+                .stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getPermissionName()))
+                .toList();
     }
 }
