@@ -1,7 +1,6 @@
 package io.github.xisabla.back.config;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
