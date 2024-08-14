@@ -1,5 +1,6 @@
 package io.github.xisabla.back.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+    @Value("${cors.allowedOrigin}")
+    private String allowedOrigin;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -37,7 +40,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowCredentials(true);
-        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedOriginPattern(allowedOrigin);
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
 

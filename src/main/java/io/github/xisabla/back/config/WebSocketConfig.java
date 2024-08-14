@@ -1,5 +1,6 @@
 package io.github.xisabla.back.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -13,13 +14,15 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSocket
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketConfigurer {
+    @Value("${cors.allowedOrigin}")
+    private String allowedOrigin;
 
     private final WebSocketHandler webSocketHandler;
 
     @Override
     public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
         registry.addHandler(webSocketHandler, "/ws")
-            .setAllowedOrigins("*");
+                .setAllowedOrigins(allowedOrigin);
     }
 
 }

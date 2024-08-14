@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 
 import io.github.xisabla.back.dto.LoginUserDto;
 import io.github.xisabla.back.dto.RegisterUserDto;
-import io.github.xisabla.back.dto.TokenizedUserDto;
 import io.github.xisabla.back.enums.Role;
 import io.github.xisabla.back.exception.APIException;
+import io.github.xisabla.back.exception.InvalidCredentialsException;
 import io.github.xisabla.back.exception.UserNotFoundException;
 import io.github.xisabla.back.model.User;
 import io.github.xisabla.back.repository.UserRepositoryInterface;
@@ -56,11 +56,11 @@ public class UserService {
     // READ
     //
 
-    public User getUserById(UUID id) {
+    public User getUserById(UUID id) throws UserNotFoundException {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    public User getUserByUsername(String username) {
+    public User getUserByUsername(String username) throws UserNotFoundException {
         return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
     }
 
@@ -68,27 +68,34 @@ public class UserService {
     // AUTH
     //
 
-    public TokenizedUserDto registerUser(RegisterUserDto registerUser) {
-        User user = createUser(registerUser.getUsername(), registerUser.getPassword());
-        String token = createToken(user);
-
-        return TokenizedUserDto.fromUser(user, token);
+    public User registerUser(RegisterUserDto registerUser) {
+        return createUser(registerUser.getUsername(), registerUser.getPassword());
     }
 
-    public TokenizedUserDto loginUser(LoginUserDto loginUser) {
-        User user = getUserByUsername(loginUser.getUsername());
+    public User loginUser(LoginUserDto loginUser) throws InvalidCredentialsException {
+        try {
+            User user = getUserByUsername(loginUser.getUsername());
 
-        if (!checkPassword(loginUser.getPassword(), user.getPassword())) {
-            throw new APIException(HttpStatus.UNAUTHORIZED, "Invalid password");
+            if (!checkPassword(loginUser.getPassword(), user.getPassword())) {
+                throw new InvalidCredentialsException();
+            }
+
+            return user;
+        } catch (UserNotFoundException e) {
+            throw new InvalidCredentialsException();
         }
-
-        String token = createToken(user);
-
-        return TokenizedUserDto.fromUser(user, token);
     }
 
     public String createToken(User user) {
         return jwtService.generateToken(user);
+    }
+
+    public boolean validateToken(String token) {
+        return jwtService.validateToken(token);
+    }
+
+    public String extractUsernameFromToken(String token) {
+        return jwtService.extractUsername(token);
     }
 
     //
