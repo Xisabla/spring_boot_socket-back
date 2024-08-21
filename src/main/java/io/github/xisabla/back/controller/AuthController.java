@@ -29,6 +29,9 @@ public class AuthController {
     @Value("${cookie.token.maxAge}")
     private int tokenCookieMaxAge;
 
+    @Value("${cookie.token.maxAge.remember}")
+    private int tokenCookieMaxAgeRemember;
+
     @Value("${cookie.token.secure}")
     private boolean tokenCookieSecure;
 
@@ -50,7 +53,9 @@ public class AuthController {
         User user = userService.loginUser(loginUser);
         String token = userService.createToken(user);
 
-        response.addCookie(createHttpOnlyCookie(tokenCookieName, token, tokenCookieMaxAge));
+        int maxAge = loginUser.isRemember() ? tokenCookieMaxAgeRemember : tokenCookieMaxAge;
+
+        response.addCookie(createHttpOnlyCookie(tokenCookieName, token, maxAge));
 
         return ResponseEntity.ok(user);
     }

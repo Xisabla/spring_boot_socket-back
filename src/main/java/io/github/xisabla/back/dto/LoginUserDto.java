@@ -14,4 +14,5 @@ public class LoginUserDto {
     @Size(min = 8, max = 128)
     private String password;
 
+    private boolean remember;
 }
