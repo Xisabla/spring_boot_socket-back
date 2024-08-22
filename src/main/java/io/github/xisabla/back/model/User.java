@@ -45,6 +45,10 @@ public class User implements UserDetails {
     @Size(min = 3, max = 30)
     private String username;
 
+    @Column(unique = true)
+    @Size(min = 3, max = 128)
+    private String email;
+
     @Size(min = 32, max = 128)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;

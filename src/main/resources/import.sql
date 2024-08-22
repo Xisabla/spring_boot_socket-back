@@ -1,1 +1,1 @@
-INSERT INTO public.users (id, username, password, role, enabled, locked, created_at, updated_at) VALUES (gen_random_uuid(), 'demo', '$argon2id$v=19$m=16384,t=2,p=1$okyD1qerZCjfqEs0h0UX/A$BFKRiMHwswfB+exI1tvDMwCqoRDxvCDCnbco5vgnjtE', 'USER', true, false , NOW(), NOW());
+INSERT INTO public.users (id, username, email, password, role, enabled, locked, created_at, updated_at) VALUES (gen_random_uuid(), 'demo', 'demo@demo.demo', '$argon2id$v=19$m=16384,t=2,p=1$okyD1qerZCjfqEs0h0UX/A$BFKRiMHwswfB+exI1tvDMwCqoRDxvCDCnbco5vgnjtE', 'USER', true, false , NOW(), NOW());

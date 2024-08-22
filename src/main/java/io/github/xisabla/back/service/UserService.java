@@ -2,15 +2,14 @@ package io.github.xisabla.back.service;
 
 import java.util.UUID;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.github.xisabla.back.dto.LoginUserDto;
 import io.github.xisabla.back.dto.RegisterUserDto;
 import io.github.xisabla.back.enums.Role;
-import io.github.xisabla.back.exception.APIException;
 import io.github.xisabla.back.exception.InvalidCredentialsException;
+import io.github.xisabla.back.exception.UserAlreadyExistsException;
 import io.github.xisabla.back.exception.UserNotFoundException;
 import io.github.xisabla.back.model.User;
 import io.github.xisabla.back.repository.UserRepositoryInterface;
@@ -29,17 +28,22 @@ public class UserService {
     // CREATE
     //
 
-    public User createUser(User user) throws APIException {
+    public User createUser(User user) throws UserAlreadyExistsException {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new APIException(HttpStatus.CONFLICT, "User already exists");
+            throw new UserAlreadyExistsException(user.getUsername());
+        }
+
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException(user.getEmail());
         }
 
         return userRepository.save(user);
     }
 
-    public User createUser(String username, String password, Role role, boolean enabled) {
+    public User createUser(String username, String email, String password, Role role, boolean enabled) {
         User user = User.builder()
                 .username(username)
+                .email(email)
                 .password(encodePassword(password))
                 .role(role)
                 .enabled(enabled)
@@ -48,13 +52,17 @@ public class UserService {
         return createUser(user);
     }
 
-    public User createUser(String username, String password) {
-        return createUser(username, password, Role.USER, true);
+    public User createUser(String username, String email, String password) {
+        return createUser(username, email, password, Role.USER, true);
     }
 
     //
     // READ
     //
+
+    public Iterable<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 
     public User getUserById(UUID id) throws UserNotFoundException {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
@@ -64,24 +72,36 @@ public class UserService {
         return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
     }
 
+    public User getUserByEmail(String email) throws UserNotFoundException {
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+    }
+
+    public User getUserByUsernameOrEmail(String usernameOrEmail) throws UserNotFoundException {
+        try {
+            return getUserByUsername(usernameOrEmail);
+        } catch (UserNotFoundException e) {
+            return getUserByEmail(usernameOrEmail);
+        }
+    }
+
     //
     // AUTH
     //
 
     public User registerUser(RegisterUserDto registerUser) {
-        return createUser(registerUser.getUsername(), registerUser.getPassword());
+        return createUser(registerUser.getUsername(), registerUser.getEmail(), registerUser.getPassword());
     }
 
     public User loginUser(LoginUserDto loginUser) throws InvalidCredentialsException {
         try {
-            User user = getUserByUsername(loginUser.getUsername());
+            User user = getUserByUsernameOrEmail(loginUser.getUsername());
 
             if (!checkPassword(loginUser.getPassword(), user.getPassword())) {
                 throw new InvalidCredentialsException();
             }
 
             return user;
-        } catch (UserNotFoundException e) {
+        } catch (UserAlreadyExistsException e) {
             throw new InvalidCredentialsException();
         }
     }
