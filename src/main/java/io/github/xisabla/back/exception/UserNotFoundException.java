@@ -8,11 +8,11 @@ import org.springframework.http.HttpStatus;
  * Exception thrown when a user is not found.
  */
 public class UserNotFoundException extends APIException {
-    public UserNotFoundException(UUID id) {
+    public UserNotFoundException(final UUID id) {
         super(HttpStatus.NOT_FOUND, "User with id \"" + id + "\" not found");
     }
 
-    public UserNotFoundException(String username) {
+    public UserNotFoundException(final String username) {
         super(HttpStatus.NOT_FOUND, "User with username \"" + username + "\" not found");
     }
 }

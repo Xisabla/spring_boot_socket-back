@@ -2,7 +2,7 @@ package io.github.xisabla.back.service;
 
 import java.util.UUID;
 
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.github.xisabla.back.dto.LoginUserDto;
@@ -15,14 +15,15 @@ import io.github.xisabla.back.model.User;
 import io.github.xisabla.back.repository.UserRepositoryInterface;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service to handle user operations.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepositoryInterface userRepository;
-
     private final JwtService jwtService;
-
-    private final Argon2PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     //
     // CREATE

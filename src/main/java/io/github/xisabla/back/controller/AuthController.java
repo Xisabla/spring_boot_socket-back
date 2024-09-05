@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.xisabla.back.dto.LoginUserDto;
 import io.github.xisabla.back.dto.RegisterUserDto;
+import io.github.xisabla.back.exception.NoAuthTokenException;
 import io.github.xisabla.back.model.User;
+import io.github.xisabla.back.service.CookieService;
 import io.github.xisabla.back.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +37,7 @@ public class AuthController {
     @Value("${cookie.token.secure}")
     private boolean tokenCookieSecure;
 
+    private final CookieService cookieUtils;
     private final UserService userService;
 
     @PostMapping("/register")
@@ -43,43 +46,36 @@ public class AuthController {
         User user = userService.registerUser(registerUser);
         String token = userService.createToken(user);
 
-        response.addCookie(createHttpOnlyCookie(tokenCookieName, token, tokenCookieMaxAge));
+        Cookie cookie = cookieUtils.createAuthTokenCookie(token);
+
+        response.addCookie(cookie);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody @Valid LoginUserDto loginUser, HttpServletResponse response) {
+    public ResponseEntity<User> login(@RequestBody @Valid LoginUserDto loginUser,
+            HttpServletResponse response) {
         User user = userService.loginUser(loginUser);
         String token = userService.createToken(user);
 
         int maxAge = loginUser.isRemember() ? tokenCookieMaxAgeRemember : tokenCookieMaxAge;
 
-        response.addCookie(createHttpOnlyCookie(tokenCookieName, token, maxAge));
+        response.addCookie(cookieUtils.createHttpOnlyCookie(tokenCookieName, token, maxAge));
 
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
-        response.addCookie(createHttpOnlyCookie(tokenCookieName, "", 0));
+        response.addCookie(cookieUtils.createHttpOnlyCookie(tokenCookieName, "", 0));
 
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/validate")
     public ResponseEntity<User> validate(HttpServletRequest request) {
-        Cookie tokenCookie = getTokenCookie(request);
-
-        if (tokenCookie == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String token = tokenCookie.getValue();
-
-        if (!userService.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        String token = getAuthToken(request);
 
         String username = userService.extractUsernameFromToken(token);
         User user = userService.getUserByUsername(username);
@@ -87,30 +83,20 @@ public class AuthController {
         return ResponseEntity.ok(user);
     }
 
-    private Cookie createHttpOnlyCookie(String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
+    //
+    // Helper methods
+    //
 
-        cookie.setHttpOnly(true);
-        cookie.setSecure(tokenCookieSecure);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-
-        return cookie;
+    /**
+     * Get the authentication token from the request
+     *
+     * @param request The request to get the token from
+     * @return The authentication token
+     */
+    private String getAuthToken(HttpServletRequest request) throws NoAuthTokenException {
+        return cookieUtils.getAuthTokenCookie(request)
+                .orElseThrow(NoAuthTokenException::new)
+                .getValue();
     }
 
-    private Cookie getTokenCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies == null) {
-            return null;
-        }
-
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(tokenCookieName)) {
-                return cookie;
-            }
-        }
-
-        return null;
-    }
 }

@@ -9,7 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.github.xisabla.back.enums.Role;
 import jakarta.persistence.Column;
@@ -50,7 +50,7 @@ public class User implements UserDetails {
     private String email;
 
     @Size(min = 32, max = 128)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)

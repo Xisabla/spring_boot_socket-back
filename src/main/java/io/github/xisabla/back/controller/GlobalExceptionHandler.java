@@ -27,4 +27,5 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(error.getStatus()).body(error);
     }
+
 }

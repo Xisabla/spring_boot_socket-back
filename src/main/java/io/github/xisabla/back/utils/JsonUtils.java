@@ -1,5 +1,6 @@
 package io.github.xisabla.back.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -11,19 +12,11 @@ public class JsonUtils {
     private JsonUtils() {
     }
 
-    public static <T> T fromJson(String json, Class<T> clazz) {
-        try {
-            return objectMapper.readValue(json, clazz);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static <T> T fromJson(String json, Class<T> clazz) throws JsonProcessingException {
+        return objectMapper.readValue(json, clazz);
     }
 
-    public static String toJson(Object object) {
-        try {
-            return objectMapper.writeValueAsString(object);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static String toJson(Object object) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(object);
     }
 }

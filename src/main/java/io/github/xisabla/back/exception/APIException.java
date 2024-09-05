@@ -12,14 +12,14 @@ public class APIException extends RuntimeException {
     private final HttpStatus status;
     private final String details;
 
-    public APIException(HttpStatus status, String message) {
+    public APIException(final HttpStatus status, final String message) {
         super(message);
 
         this.status = status;
         this.details = null;
     }
 
-    public APIException(HttpStatus status, String message, String details) {
+    public APIException(final HttpStatus status, final String message, final String details) {
         super(message);
 
         this.status = status;
