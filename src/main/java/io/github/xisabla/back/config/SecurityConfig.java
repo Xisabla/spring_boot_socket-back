@@ -3,6 +3,7 @@ package io.github.xisabla.back.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -22,36 +23,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import io.github.xisabla.back.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Security configuration.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    @Value("${cors.allowedOrigin}")
-    private String allowedOrigin;
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final UserDetailsServiceImpl userDetailsService;
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
-    }
+    //
+    // GLOBAL SECURITY
+    //
 
-    @Bean
-    AuthenticationProvider authenticationProvider() {
-        final DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-
-        return provider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(final AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
+    /**
+     * Security filter chain.
+     * Sets up the routes permissions.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         http.httpBasic(AbstractHttpConfigurer::disable);
@@ -59,13 +47,29 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.NEVER))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/auth/register").permitAll()
-                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/auth/logout").permitAll()
-                        .requestMatchers("/users/email").permitAll()
-                        .requestMatchers("/users/username").permitAll()
+                        // General
+                        .requestMatchers(HttpMethod.GET, "/info/version").permitAll()
+                        // API Doc
+                        .requestMatchers(HttpMethod.GET, "/v3/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
+                        // Auth
+                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/logout").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/validate").authenticated()
+                        // Channels
+                        .requestMatchers(HttpMethod.GET, "/channels").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/channels").hasAuthority("CREATE_CHANNEL")
+                        .requestMatchers(HttpMethod.GET, "/channels/**").authenticated()
+                        // Messages
+                        .requestMatchers(HttpMethod.POST, "/messages").hasAuthority("SEND_MESSAGE")
+                        // Users
+                        .requestMatchers(HttpMethod.GET, "/users/email").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/username").permitAll()
+                        // Websocket
+                        .requestMatchers("/ws/**").permitAll() // TODO: Test with autenticated()
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
@@ -74,6 +78,15 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Allowed origin for CORS.
+     */
+    @Value("${cors.allowedOrigin}")
+    private String allowedOrigin;
+
+    /**
+     * CORS configuration.
+     */
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
@@ -88,5 +101,40 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
+    }
+
+    //
+    // AUTHENTICATION
+    //
+
+    private final UserDetailsServiceImpl userDetailsService;
+
+    /**
+     * Password encoder.
+     */
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
+    }
+
+    /**
+     * Authentication provider.
+     */
+    @Bean
+    AuthenticationProvider authenticationProvider() {
+        final DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+
+        return provider;
+    }
+
+    /**
+     * Authentication manager.
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(final AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }

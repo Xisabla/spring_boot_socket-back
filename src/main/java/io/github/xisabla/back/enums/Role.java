@@ -12,8 +12,14 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public enum Role {
-    ADMIN(Set.of(Permission.DELETE_MESSAGES)),
-    USER(Set.of());
+    ADMIN(Set.of(
+            Permission.CREATE_CHANNEL,
+            Permission.SEND_MESSAGE,
+            Permission.DELETE_MESSAGES)),
+    USER(Set.of(
+            Permission.CREATE_CHANNEL,
+            Permission.SEND_MESSAGE)),
+    GUEST(Set.of());
 
     private final Set<Permission> permissions;
 

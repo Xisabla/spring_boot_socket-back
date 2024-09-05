@@ -7,15 +7,13 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.xisabla.back.service.InfoService;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Controller for general application information.
+ */
 @RestController
 @RequiredArgsConstructor
 public class AppController {
     private final InfoService appService;
-
-    @GetMapping("/test/endpoint")
-    public ResponseEntity<String> testEndpoint() {
-        return ResponseEntity.ok("It just works !");
-    }
 
     @GetMapping("/info/version")
     public ResponseEntity<InfoService.Version> getVersion() {

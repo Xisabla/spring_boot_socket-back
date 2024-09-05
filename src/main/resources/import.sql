@@ -1,1 +1,4 @@
-INSERT INTO public.users (id, username, email, password, role, enabled, locked, created_at, updated_at) VALUES (gen_random_uuid(), 'demo', 'demo@demo.demo', '$argon2id$v=19$m=16384,t=2,p=1$okyD1qerZCjfqEs0h0UX/A$BFKRiMHwswfB+exI1tvDMwCqoRDxvCDCnbco5vgnjtE', 'USER', true, false , NOW(), NOW());
+INSERT INTO public.users (id, username, email, password, role, enabled, locked, created_at, updated_at) VALUES ('00000000-0000-0000-0000-000000000000', 'app', 'app@app.app', '$argon2id$v=19$m=16384,t=2,p=1$okyD1qerZCjfqEs0h0UX/A$BFKRiMHwswfB+exI1tvDMwCqoRDxvCDCnbco5vgnjtE', 'USER', true, false , NOW(), NOW());
+INSERT INTO public.users (id, username, email, password, role, enabled, locked, created_at, updated_at) VALUES (gen_random_uuid(), 'guest', 'guest@demo.demo', '$argon2id$v=19$m=16384,t=2,p=1$okyD1qerZCjfqEs0h0UX/A$BFKRiMHwswfB+exI1tvDMwCqoRDxvCDCnbco5vgnjtE', 'GUEST', true, false , NOW(), NOW());
+
+INSERT INTO public.channel (id, name, description, owner_id, is_public, enabled, created_at, updated_at) VALUES ('00000000-0000-0000-0000-000000000000', 'general', 'General channel', '00000000-0000-0000-0000-000000000000', true, true, NOW(), NOW());

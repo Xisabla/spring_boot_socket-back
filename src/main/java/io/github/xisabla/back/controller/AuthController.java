@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.xisabla.back.dto.LoginUserDto;
-import io.github.xisabla.back.dto.RegisterUserDto;
+import io.github.xisabla.back.dto.UserLoginDto;
+import io.github.xisabla.back.dto.UserRegisterDto;
 import io.github.xisabla.back.exception.NoAuthTokenException;
 import io.github.xisabla.back.model.User;
 import io.github.xisabla.back.service.CookieService;
@@ -21,10 +21,29 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 
+/**
+ * Controller for authentication.
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    private final CookieService cookieService;
+    private final UserService userService;
+
+    @PostMapping("/register")
+    public ResponseEntity<User> register(@RequestBody @Valid UserRegisterDto registerUser,
+            HttpServletResponse response) {
+        User user = userService.registerUser(registerUser);
+        String token = userService.createToken(user);
+
+        Cookie cookie = cookieService.createAuthTokenCookie(token);
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    }
+
     @Value("${cookie.token.name}")
     private String tokenCookieName;
 
@@ -34,41 +53,22 @@ public class AuthController {
     @Value("${cookie.token.maxAge.remember}")
     private int tokenCookieMaxAgeRemember;
 
-    @Value("${cookie.token.secure}")
-    private boolean tokenCookieSecure;
-
-    private final CookieService cookieUtils;
-    private final UserService userService;
-
-    @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody @Valid RegisterUserDto registerUser,
-            HttpServletResponse response) {
-        User user = userService.registerUser(registerUser);
-        String token = userService.createToken(user);
-
-        Cookie cookie = cookieUtils.createAuthTokenCookie(token);
-
-        response.addCookie(cookie);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
-    }
-
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody @Valid LoginUserDto loginUser,
+    public ResponseEntity<User> login(@RequestBody @Valid UserLoginDto loginUser,
             HttpServletResponse response) {
         User user = userService.loginUser(loginUser);
         String token = userService.createToken(user);
 
         int maxAge = loginUser.isRemember() ? tokenCookieMaxAgeRemember : tokenCookieMaxAge;
 
-        response.addCookie(cookieUtils.createHttpOnlyCookie(tokenCookieName, token, maxAge));
+        response.addCookie(cookieService.createHttpOnlyCookie(tokenCookieName, token, maxAge));
 
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
-        response.addCookie(cookieUtils.createHttpOnlyCookie(tokenCookieName, "", 0));
+        response.addCookie(cookieService.createHttpOnlyCookie(tokenCookieName, "", 0));
 
         return ResponseEntity.ok().build();
     }
@@ -94,7 +94,7 @@ public class AuthController {
      * @return The authentication token
      */
     private String getAuthToken(HttpServletRequest request) throws NoAuthTokenException {
-        return cookieUtils.getAuthTokenCookie(request)
+        return cookieService.getAuthTokenCookie(request)
                 .orElseThrow(NoAuthTokenException::new)
                 .getValue();
     }
