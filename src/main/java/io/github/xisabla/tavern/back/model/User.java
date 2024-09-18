@@ -1,6 +1,7 @@
 package io.github.xisabla.tavern.back.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.xisabla.tavern.back.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -44,7 +45,8 @@ public class User implements UserDetails {
     private String password;
 
     @Builder.Default
-    private String role = "USER";
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
     @Builder.Default
     private boolean enabled = true;
