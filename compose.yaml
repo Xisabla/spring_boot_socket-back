@@ -1,0 +1,35 @@
+services:
+  back:
+    build:
+      context: .
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:${POSTGRES_PORT}/${POSTGRES_DB}
+    ports:
+      - "${SERVER_PORT}:8080"
+    networks:
+      - reverse-proxy
+    restart: on-failure
+
+  database:
+    image: postgres:16.4
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 30s
+      timeout: 60s
+      retries: 3
+      start_period: 30s
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    networks:
+      - reverse-proxy
+    restart: unless-stopped
+
+networks:
+  reverse-proxy:
