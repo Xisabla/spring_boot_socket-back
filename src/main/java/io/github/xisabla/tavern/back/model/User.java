@@ -33,7 +33,7 @@ public class User implements UserDetails {
     private UUID id;
 
     @Column(unique = true)
-    @Size(min = 3, max = 30)
+    @Size(min = 3, max = 32)
     private String username;
 
     @Column(unique = true)
