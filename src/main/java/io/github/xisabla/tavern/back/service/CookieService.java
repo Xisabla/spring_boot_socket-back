@@ -30,7 +30,7 @@ public class CookieService {
      * @param name   Name of the cookie to create
      * @param value  Value of the cookie
      * @param maxAge Expiration time of the cookie
-     * @return The created cookie
+     * @return The created cookie, to be added to the response
      * @link https://owasp.org/www-community/HttpOnly
      */
     public Cookie createHttpOnlyCookie(String name, String value, int maxAge) {
@@ -49,12 +49,22 @@ public class CookieService {
      *
      * @param token    Token to store in the cookie
      * @param remember Whether to remember the user
-     * @return The created cookie
+     * @return The created cookie, to be added to the response
      */
     public Cookie createAuthCookie(String token, boolean remember) {
         int maxAge = remember ? authCookieMaxAgeRemember : authCookieMaxAge;
 
         return createHttpOnlyCookie(authCookieName, token, maxAge);
+    }
+
+    /**
+     * Create a cookie to logout the user.
+     * This cookie will have an expiration time of 0 and an empty value.
+     *
+     * @return The created cookie, to be added to the response
+     */
+    public Cookie createLogoutCookie() {
+        return createHttpOnlyCookie(authCookieName, "", 0);
     }
 
     /**

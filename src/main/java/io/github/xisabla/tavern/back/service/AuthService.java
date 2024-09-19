@@ -9,10 +9,12 @@ import io.github.xisabla.tavern.back.model.User;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to manage authentication.
  */
+@Service
 @RequiredArgsConstructor
 public class AuthService {
     private final UserService userService;
