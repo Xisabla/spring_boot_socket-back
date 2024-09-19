@@ -1,0 +1,2 @@
+INSERT INTO public.users (id, username, email, password, role, enabled, locked, created_at, updated_at) VALUES ('00000000-0000-0000-0000-000000000000', 'admin', 'admin@demo.demo', '$2a$06$yhvtiCIwrQ0EMDJrensyMukczYm/sRVnF4NiW52FFBkwUVpjP38XO', 'ADMIN', true, false , NOW(), NOW());
+INSERT INTO public.users (id, username, email, password, role, enabled, locked, created_at, updated_at) VALUES ('00000000-0000-0000-0000-000000000001', 'user', 'user@demo.demo', '$2a$06$yhvtiCIwrQ0EMDJrensyMukczYm/sRVnF4NiW52FFBkwUVpjP38XO', 'USER', true, false , NOW(), NOW());
