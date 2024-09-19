@@ -40,6 +40,9 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.NEVER))
             .authorizeHttpRequests(requests -> requests
+                // Info
+                .requestMatchers(HttpMethod.GET, "/info/healthcheck").permitAll()
+                .requestMatchers(HttpMethod.GET, "/info/version").permitAll()
                 // Auth
                 .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
