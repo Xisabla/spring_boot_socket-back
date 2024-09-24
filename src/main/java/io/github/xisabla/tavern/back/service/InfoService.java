@@ -28,7 +28,7 @@ public class InfoService {
 
     @Data
     @AllArgsConstructor
-    public class Version {
+    public static class Version {
         private String version;
         private String build;
         private String timestamp;
