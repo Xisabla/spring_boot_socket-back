@@ -26,7 +26,7 @@ public class ChannelController {
     private final ChannelService channelService;
 
     @PostMapping
-    public ResponseEntity<Channel> createChannel(@RequestBody ChannelCreateDto channelCreateDto) {
+    public ResponseEntity<Channel> createChannel(@RequestBody @Valid ChannelCreateDto channelCreateDto) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Channel channel = channelService.createChannel(channelCreateDto, user);
 
