@@ -69,4 +69,12 @@ public class ChannelService {
         return channelRepository.getMembersInChannel(channel, pageable);
     }
 
+    //
+    // Helpers
+    //
+
+    public boolean isMemberOfChannel(Channel channel, User user) {
+        return channel.getMembers().contains(user);
+    }
+
 }
