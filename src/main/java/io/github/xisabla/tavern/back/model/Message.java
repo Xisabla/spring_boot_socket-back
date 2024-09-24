@@ -43,4 +43,8 @@ public class Message {
     @UpdateTimestamp
     private Date updatedAt;
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Message message && message.getId().equals(this.id);
+    }
 }

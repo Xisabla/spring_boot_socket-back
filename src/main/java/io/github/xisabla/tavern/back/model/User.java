@@ -69,4 +69,9 @@ public class User implements UserDetails {
     public boolean isAccountNonLocked() {
         return !locked;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof User user && user.getId().equals(id);
+    }
 }

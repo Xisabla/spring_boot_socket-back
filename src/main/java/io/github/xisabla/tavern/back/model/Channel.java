@@ -52,4 +52,8 @@ public class Channel {
     @UpdateTimestamp
     private Date updatedAt;
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Channel channel && channel.getId().equals(this.id);
+    }
 }
