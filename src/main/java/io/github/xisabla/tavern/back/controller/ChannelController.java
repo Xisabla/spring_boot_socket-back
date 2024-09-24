@@ -1,10 +1,12 @@
 package io.github.xisabla.tavern.back.controller;
 
 import io.github.xisabla.tavern.back.dto.ChannelCreateDto;
-import io.github.xisabla.tavern.back.exception.NotImplementedException;
 import io.github.xisabla.tavern.back.model.Channel;
+import io.github.xisabla.tavern.back.model.Message;
 import io.github.xisabla.tavern.back.model.User;
 import io.github.xisabla.tavern.back.service.ChannelService;
+import io.github.xisabla.tavern.back.service.MessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChannelController {
     private final ChannelService channelService;
+    private final MessageService messageService;
 
     @PostMapping
     public ResponseEntity<Channel> createChannel(@RequestBody @Valid ChannelCreateDto channelCreateDto) {
@@ -54,8 +57,10 @@ public class ChannelController {
     }
 
     @GetMapping("/id/{id}/messages")
-    public ResponseEntity<Page<Void>> getChannelMessages(@PathVariable UUID id, @SortDefault @PageableDefault Pageable pageable) {
-        throw new NotImplementedException();
+    public ResponseEntity<Page<Message>> getChannelMessages(@PathVariable UUID id, @SortDefault @PageableDefault Pageable pageable) {
+        Page<Message> messages = messageService.getMessagesInChannel(id, pageable);
+
+        return ResponseEntity.ok(messages);
     }
 
     @GetMapping("/id/{id}/members")
