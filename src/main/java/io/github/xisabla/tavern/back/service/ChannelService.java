@@ -11,8 +11,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service to handle channels.
+ */
 @Service
 @RequiredArgsConstructor
 public class ChannelService {
@@ -37,6 +41,7 @@ public class ChannelService {
             .owner(owner)
             .isPublic(isPublic)
             .enabled(enabled)
+            .members(List.of(owner))
             .build();
 
         return createChannel(channel);
