@@ -49,21 +49,21 @@ public class ChannelController {
         return ResponseEntity.ok(channels);
     }
 
-    @GetMapping("/id/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Channel> getChannelById(@PathVariable UUID id) {
         Channel channel = channelService.getChannelById(id);
 
         return ResponseEntity.ok(channel);
     }
 
-    @GetMapping("/id/{id}/messages")
+    @GetMapping("/{id}/messages")
     public ResponseEntity<Page<Message>> getChannelMessages(@PathVariable UUID id, @SortDefault @PageableDefault Pageable pageable) {
         Page<Message> messages = messageService.getMessagesInChannel(id, pageable);
 
         return ResponseEntity.ok(messages);
     }
 
-    @GetMapping("/id/{id}/members")
+    @GetMapping("/{id}/members")
     public ResponseEntity<Page<User>> getChannelMembers(@PathVariable UUID id, @SortDefault(sort = "username") @PageableDefault Pageable pageable) {
         Page<User> members = channelService.getChannelMembers(id, pageable);
 
