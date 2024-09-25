@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
- * Global exception handler for the application.
- * Returns a response with the appropriate status code and message when an exception is thrown.
+ * Global exception handler for the application. Returns a response with the appropriate status code and message when an
+ * exception is thrown.
  */
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -20,10 +20,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      *
      * @param apiException The exception to handle.
      * @param request      The request that caused the exception.
+     *
      * @return The response entity with the error response.
      */
-    @ExceptionHandler({APIException.class})
-    public ResponseEntity<ErrorResponse> handleException(final APIException apiException, @NonNull final HttpServletRequest request) {
+    @ExceptionHandler({ APIException.class })
+    public ResponseEntity<ErrorResponse> handleException(final APIException apiException,
+                                                         @NonNull final HttpServletRequest request
+    ) {
         ErrorResponse errorResponse = new ErrorResponse(apiException).withRequest(request);
 
         return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
@@ -34,10 +37,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      *
      * @param exception The exception to handle.
      * @param request   The request that caused the exception.
+     *
      * @return The response entity with the error response.
      */
-    @ExceptionHandler({Exception.class})
-    public ResponseEntity<ErrorResponse> handleException(final Exception exception, @NonNull final HttpServletRequest request) {
+    @ExceptionHandler({ Exception.class })
+    public ResponseEntity<ErrorResponse> handleException(final Exception exception,
+                                                         @NonNull final HttpServletRequest request
+    ) {
         ErrorResponse errorResponse = new ErrorResponse(exception).withRequest(request);
 
         return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);

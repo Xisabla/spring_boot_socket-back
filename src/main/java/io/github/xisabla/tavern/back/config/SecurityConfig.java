@@ -27,9 +27,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    /**
+     * JWT authentication filter.
+     */
     private final JWTAuthFilter jwtAuthFilter;
+    /**
+     * User details service for authentication.
+     */
     private final UserDetailsServiceImpl userDetailsService;
 
+    /**
+     * Allowed origin for CORS.
+     */
     @Value("${cors.allowed-origin}")
     private String allowedOrigin;
 
@@ -37,28 +46,39 @@ public class SecurityConfig {
      * Security filter chain configuration.
      *
      * @param http The http security configuration.
+     *
      * @return The security filter chain for the application.
+     *
      * @throws Exception If an error occurs during the configuration.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
-        http
-            .httpBasic(AbstractHttpConfigurer::disable)
+        http.httpBasic(AbstractHttpConfigurer::disable)
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.NEVER))
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(requests -> requests
                 // Info
-                .requestMatchers(HttpMethod.GET, "/info/healthcheck").permitAll()
-                .requestMatchers(HttpMethod.GET, "/info/version").permitAll()
+                .requestMatchers(HttpMethod.GET, "/info/healthcheck")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/info/version")
+                .permitAll()
                 // Auth
-                .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/logout").authenticated()
-                .requestMatchers(HttpMethod.GET, "/auth/validate").authenticated()
-                .requestMatchers(HttpMethod.GET, "/auth/refresh").authenticated()
+                .requestMatchers(HttpMethod.POST, "/auth/register")
+                .permitAll()
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/auth/login")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/logout")
+                .authenticated()
+                .requestMatchers(HttpMethod.GET, "/auth/validate")
+                .authenticated()
+                .requestMatchers(HttpMethod.GET, "/auth/refresh")
+                .authenticated()
                 // Any
-                .anyRequest().authenticated());
+                .anyRequest()
+                .authenticated());
 
         http.authenticationProvider(authProvider());
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -83,6 +103,8 @@ public class SecurityConfig {
 
     /**
      * Password encoder using BCrypt.
+     *
+     * @return The password encoder.
      */
     @Bean
     PasswordEncoder passwordEncoder() {

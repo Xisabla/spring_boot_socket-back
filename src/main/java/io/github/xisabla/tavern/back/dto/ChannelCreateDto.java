@@ -1,5 +1,6 @@
 package io.github.xisabla.tavern.back.dto;
 
+import io.github.xisabla.tavern.back.model.Channel;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -9,10 +10,16 @@ import lombok.Data;
  */
 @Data
 public class ChannelCreateDto {
+    /**
+     * Name of the channel to create.
+     */
     @NotNull
-    @Size(min = 3, max = 32)
+    @Size(min = Channel.NAME_MIN_LENGTH, max = Channel.NAME_MAX_LENGTH)
     private String name;
 
-    @Size(max = 512)
+    /**
+     * Description of the channel to create.
+     */
+    @Size(max = Channel.DESCRIPTION_MAX_LENGTH)
     private String description;
 }

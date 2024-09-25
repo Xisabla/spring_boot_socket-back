@@ -26,8 +26,17 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class JWTAuthFilter extends OncePerRequestFilter {
+    /**
+     * Service to handle cookies.
+     */
     private final CookieService cookieService;
+    /**
+     * Service to handle JSON Web Tokens.
+     */
     private final JWTService jwtService;
+    /**
+     * Service to handle user details.
+     */
     private final UserDetailsServiceImpl userDetailsService;
 
     /**
@@ -36,11 +45,15 @@ public class JWTAuthFilter extends OncePerRequestFilter {
      * @param request     Request to be filtered
      * @param response    Response linked to the request
      * @param filterChain Filter chain to continue the request
+     *
      * @throws ServletException If an error occurs during the filter
      * @throws IOException      If an error occurs during the filter
      */
     @Override
-    protected void doFilterInternal(@NonNull final HttpServletRequest request, @NonNull final HttpServletResponse response, @NonNull final FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull final HttpServletRequest request,
+                                    @NonNull final HttpServletResponse response,
+                                    @NonNull final FilterChain filterChain
+    ) throws ServletException, IOException {
         final Optional<Cookie> authCookie = cookieService.getAuthCookie(request);
 
         if (authCookie.isEmpty()) {
@@ -65,9 +78,10 @@ public class JWTAuthFilter extends OncePerRequestFilter {
      * Retrieves the user from the JWT token.
      *
      * @param token Token extracted from the request
+     *
      * @return User details if the token is valid, empty otherwise
      */
-    private Optional<UserDetails> getUser(String token) {
+    private Optional<UserDetails> getUser(final String token) {
         final String username = jwtService.extractUsername(token);
 
         if (username == null || !jwtService.validateToken(token)) {
@@ -84,7 +98,8 @@ public class JWTAuthFilter extends OncePerRequestFilter {
      * @param request Request to be authenticated
      */
     private void setAuthenticationToken(final UserDetails user, @NonNull final HttpServletRequest request) {
-        final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        final UsernamePasswordAuthenticationToken authentication
+            = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
 
         authentication.setDetails(new WebAuthenticationDetails(request));
 

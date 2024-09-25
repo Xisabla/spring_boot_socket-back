@@ -18,9 +18,23 @@ import java.util.Map;
  */
 @Service
 public class JWTService {
+    /**
+     * Number of milliseconds in a second.
+     */
+    private static final int MILLIS_IN_SECOND = 1000;
+
+    /**
+     * Secret key to sign the tokens.
+     * <p>
+     * Must be defined in the application properties and must be kept secret. Must be strong enough to be accepted by
+     * the algorithm used to sign the tokens.
+     */
     @Value("${jwt.secret}")
     private String secret;
 
+    /**
+     * Duration of the token validity in seconds.
+     */
     @Value("${jwt.expiration}")
     private long expiration;
 
@@ -29,30 +43,35 @@ public class JWTService {
      *
      * @param claims      Additional claims to add to the token.
      * @param userDetails User to create the token for.
+     *
      * @return A JWT token claiming the user.
+     *
      * @throws InvalidKeyException If the secret key is invalid.
      */
-    private String buildToken(Map<String, Object> claims, UserDetails userDetails) throws InvalidKeyException {
+    private String buildToken(final Map<String, Object> claims, final UserDetails userDetails)
+        throws InvalidKeyException {
         Date now = new Date(System.currentTimeMillis());
-        Date expirationDate = new Date(now.getTime() + expiration * 1000);
+        Date expirationDate = new Date(now.getTime() + expiration * MILLIS_IN_SECOND);
 
         return Jwts.builder()
-            .claims(claims)
-            .subject(userDetails.getUsername())
-            .issuedAt(now)
-            .expiration(expirationDate)
-            .signWith(getSignInKey())
-            .compact();
+                   .claims(claims)
+                   .subject(userDetails.getUsername())
+                   .issuedAt(now)
+                   .expiration(expirationDate)
+                   .signWith(getSignInKey())
+                   .compact();
     }
 
     /**
      * Create a token to identify a user.
      *
      * @param userDetails User to create the token for.
+     *
      * @return The JWT token identifying the user.
+     *
      * @throws InvalidKeyException If the secret key is invalid.
      */
-    public String generateToken(UserDetails userDetails) throws InvalidKeyException {
+    public String generateToken(final UserDetails userDetails) throws InvalidKeyException {
         return buildToken(Map.of(), userDetails);
     }
 
@@ -60,39 +79,38 @@ public class JWTService {
      * Extract the claims from a token.
      *
      * @param token Token to extract the claims from.
+     *
      * @return The claims extracted from the token.
+     *
      * @throws JwtException             If the token is malformed or if the secret key is invalid.
      * @throws IllegalArgumentException If the token is invalid (null).
      */
-    private Claims extractClaims(String token) throws JwtException, IllegalArgumentException {
-        return Jwts.parser()
-            .verifyWith(getSignInKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+    private Claims extractClaims(final String token) throws JwtException, IllegalArgumentException {
+        return Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token).getPayload();
     }
 
     /**
      * Check if a token is expired.
      *
      * @param token Token to check.
+     *
      * @return True if the token is expired, false otherwise.
+     *
      * @throws JwtException             If the token is malformed or if the secret key is invalid.
      * @throws IllegalArgumentException If the token is invalid (null).
      */
-    private boolean isTokenExpired(String token) throws JwtException, IllegalArgumentException {
-        return extractClaims(token)
-            .getExpiration()
-            .before(new Date());
+    private boolean isTokenExpired(final String token) throws JwtException, IllegalArgumentException {
+        return extractClaims(token).getExpiration().before(new Date());
     }
 
     /**
      * Check if a token is readable and not expired.
      *
      * @param token Token to validate.
+     *
      * @return True if the token is readable and not expired, false otherwise.
      */
-    public boolean validateToken(String token) {
+    public boolean validateToken(final String token) {
         try {
             return !isTokenExpired(token);
         } catch (JwtException | IllegalArgumentException e) {
@@ -104,11 +122,13 @@ public class JWTService {
      * Extract the username from a token.
      *
      * @param token Token to extract the username from.
+     *
      * @return The username extracted from the token.
+     *
      * @throws JwtException             If the token is malformed or if the secret key is invalid.
      * @throws IllegalArgumentException If the token is invalid (null).
      */
-    public String extractUsername(String token) throws JwtException, IllegalArgumentException {
+    public String extractUsername(final String token) throws JwtException, IllegalArgumentException {
         return extractClaims(token).getSubject();
     }
 

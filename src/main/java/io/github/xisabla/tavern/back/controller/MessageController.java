@@ -20,10 +20,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/messages")
 @RequiredArgsConstructor
 public class MessageController {
+    /**
+     * Service for managing messages.
+     */
     private final MessageService messageService;
 
+    /**
+     * Create a message.
+     *
+     * @param messageCreateDto Message to create
+     *
+     * @return Created message
+     */
     @PostMapping
-    public ResponseEntity<Message> createMessage(@RequestBody @Valid MessageCreateDto messageCreateDto) {
+    public ResponseEntity<Message> createMessage(@RequestBody @Valid final MessageCreateDto messageCreateDto) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Message message = messageService.createMessage(messageCreateDto, user);
 

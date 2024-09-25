@@ -8,7 +8,6 @@ import io.github.xisabla.tavern.back.exception.UserNotFoundException;
 import io.github.xisabla.tavern.back.model.User;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,31 +16,61 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+    /**
+     * Service to manage users.
+     */
     private final UserService userService;
+    /**
+     * Service to manage JWT tokens.
+     */
     private final JWTService jwtService;
 
-    private final PasswordEncoder passwordEncoder;
-
-    public User registerUser(UserRegisterDto userRegisterDto) throws UserAlreadyExistsException {
-        String encodedPassword = encodePassword(userRegisterDto.getPassword());
-
-        return userService.createUser(userRegisterDto.getUsername(), userRegisterDto.getEmail(), encodedPassword);
+    /**
+     * Register a new user and return it.
+     *
+     * @param userRegisterDto User registration data
+     *
+     * @return User that was registered
+     *
+     * @throws UserAlreadyExistsException If the user already exists
+     */
+    public User registerUser(final UserRegisterDto userRegisterDto) throws UserAlreadyExistsException {
+        return userService.createUser(userRegisterDto);
     }
 
-    public User loginUser(UserLoginDto userLoginDto) throws InvalidCredentialsException {
+    /**
+     * Login the user and return it.
+     *
+     * @param userLoginDto User login data
+     *
+     * @return User that logged in
+     *
+     * @throws InvalidCredentialsException If the credentials are invalid
+     */
+    public User loginUser(final UserLoginDto userLoginDto) throws InvalidCredentialsException {
         try {
             User user = userService.getUserByLogin(userLoginDto.getLogin());
 
-            if (!checkPassword(userLoginDto.getPassword(), user.getPassword())) {
+            if (!userService.checkPassword(userLoginDto.getPassword(), user.getPassword())) {
                 throw new InvalidCredentialsException();
             }
+
             return user;
         } catch (UserNotFoundException e) {
             throw new InvalidCredentialsException();
         }
     }
 
-    public User validate(String token) throws InvalidCredentialsException {
+    /**
+     * Validate the token and return the user.
+     *
+     * @param token Token to validate
+     *
+     * @return User associated with the token
+     *
+     * @throws InvalidCredentialsException If the token is invalid
+     */
+    public User validate(final String token) throws InvalidCredentialsException {
         if (!jwtService.validateToken(token)) {
             throw new InvalidCredentialsException();
         }
@@ -55,11 +84,4 @@ public class AuthService {
         }
     }
 
-    private String encodePassword(String password) {
-        return passwordEncoder.encode(password);
-    }
-
-    private boolean checkPassword(String password, String encodedPassword) {
-        return passwordEncoder.matches(password, encodedPassword);
-    }
 }
